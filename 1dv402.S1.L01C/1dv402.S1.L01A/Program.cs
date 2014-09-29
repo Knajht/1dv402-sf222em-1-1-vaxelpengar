@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Resources;
+using Message = _1dv402.S1.L01A.Properties.Messages;
+// Har haft problem med namngivningen när jag bytt nivå på labben, får hitta ett bättre sätt i framtiden.
 
 namespace _1dv402.S1.L01C
 {
@@ -12,75 +15,19 @@ namespace _1dv402.S1.L01C
         {
             do
             {            
-                double subtotal = ReadPositiveDouble("Ange totalsumma: ");
-                uint payedSum = ReadUint("Ange erhållet belopp: ", subtotal);
-
+                double subtotal = ReadPositiveDouble(Message.Total_Prompt);
+                uint payedSum = ReadUint(Message.PayedSum_Prompt, subtotal);
                 uint total = (uint)Math.Round(subtotal, MidpointRounding.AwayFromZero);
                 double roundingOffAmount = total - subtotal;
                 uint returnSum = payedSum - total;
-
-                //Console.WriteLine("KVITTO\n-----------------------------------------");
-                //Console.WriteLine("Totalt: {0:c2}", subtotal);
-                //Console.WriteLine("Öresavrundning: {0:c2}", roundingOffAmount);
-                //Console.WriteLine("Att betala: {0:c2}", total);
-                //Console.WriteLine("Kontant: {0:c2}", payedSum);
-                //Console.WriteLine("Tillbaka: {0:c2}\n-----------------------------------------", returnSum);
-
                 uint[] denominations = { 500, 100, 50, 20, 10, 5, 1 };
                 uint[] notes = SplitIntoDenominations(returnSum, denominations);
 
-                //foreach (uint i in notes)
-                //{
-                //    Console.WriteLine(i);
-                //}
-
                 ViewReceipt(subtotal, roundingOffAmount, total, payedSum, returnSum, notes, denominations);
-
-                ViewMessage("Tryck ny tangent för ny beräkning - Esc avslutar");
+                ViewMessage(Message.Continue_Prompt);
 
             } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
         }
-        static uint[] SplitIntoDenominations(uint returnSum, uint[] denominations)
-        {
-            uint count = 0;
-            int iterator = 0;
-            string form = null; ;
-            uint[] notes = new uint[denominations.GetLength(0)];
-            
-            foreach (uint i in denominations)
-            {
-                count = returnSum / i;
-                returnSum -= i * count;
-                returnSum = returnSum % i;
-
-                notes[iterator] = count;
-                iterator++;
-                //if (count > 0)
-                //{
-                //    switch(i)
-                //    {
-                //        case 500:
-                //        case 100:
-                //        case 50:
-                //        case 20:
-                //            form = "lappar";
-                //            break;
-                //        case 10:
-                //        case 5:
-                //        case 1:
-                //            form = "kronor";
-                //            break;
-
-                //    }
-                    
-
-                    //Console.WriteLine("{0}-{1}: {2}", i, form, count);
-                //}
-            }
-
-            return notes;
-        }
-
         static double ReadPositiveDouble(string prompt)
         {
             double subtotal = 0;
@@ -92,7 +39,7 @@ namespace _1dv402.S1.L01C
                 try
                 {
                     Console.Write(prompt);
-                    input = (Console.ReadLine());
+                    input = Console.ReadLine();
                     subtotal = double.Parse(input);
                     if (Math.Round(subtotal, MidpointRounding.AwayFromZero) < 1)
                     {
@@ -102,37 +49,59 @@ namespace _1dv402.S1.L01C
                 }
                 catch
                 {
-                    ViewMessage(String.Format("FEL! '{0}' kan inte tolkas som en giltig summa pengar.", input), true);
+                    ViewMessage(String.Format(Message.WrongInput_Error, input), true);
                 }
             } while (startOver == true);
 
             return subtotal;
         }
-
         static uint ReadUint(string prompt, double minimum)
         {
             uint payedSum = 0;
             bool startOver = true;
+            string input = null;
+
             do
             {
                 try
                 {
                     Console.Write(prompt);
-                    payedSum = uint.Parse(Console.ReadLine());
+                    input = Console.ReadLine();
+                    payedSum = uint.Parse(input);
                     if (payedSum < Math.Round(minimum, MidpointRounding.AwayFromZero))
                     {
                         throw new ArgumentOutOfRangeException();
                     }
                     startOver = false;
                 }
+                catch (ArgumentOutOfRangeException)
+                {
+                    ViewMessage(Message.LowCash_Error, true);
+                }
                 catch
                 {
-                    ViewMessage("Ange ett heltal större än eller lika med totalsumman.", true);
+                    ViewMessage(String.Format(Message.WrongInput_Error, input), true);
+                    ViewMessage(Message.LowCash_Error, true);
                 }
             } while (startOver == true);
             return payedSum;
         }
+        static uint[] SplitIntoDenominations(uint returnSum, uint[] denominations)
+        {
+            uint count = 0;
+            int iterator = 0;
+            uint[] notes = new uint[denominations.GetLength(0)];
 
+            foreach (uint i in denominations)
+            {
+                count = returnSum / i;
+                returnSum -= i * count;
+                returnSum = returnSum % i;
+                notes[iterator] = count;
+                iterator++;
+            }
+            return notes;
+        }
         static void ViewMessage(string message, bool IsError = false)
         {
             if(IsError == false)
@@ -149,18 +118,20 @@ namespace _1dv402.S1.L01C
             }
 
         }
-
         static void ViewReceipt(double subtotal, double roundingOffAmount, uint total, uint payedSum, uint returnSum, uint[] notes, uint[] denominations)
         {
             int iterator = 0;
             string form = null;
 
-            Console.WriteLine("KVITTO\n-----------------------------------------");
-            Console.WriteLine("Totalt: {0:c2}", subtotal);
-            Console.WriteLine("Öresavrundning: {0:c2}", roundingOffAmount);
-            Console.WriteLine("Att betala: {0:c2}", total);
-            Console.WriteLine("Kontant: {0:c2}", payedSum);
-            Console.WriteLine("Tillbaka: {0:c2}\n-----------------------------------------", returnSum);
+            Console.WriteLine("\n");
+            Console.WriteLine(Message.RecieptStart);
+            Console.WriteLine(Message.RecieptLine);
+            Console.WriteLine(String.Format("{0, -20} {1} {2, 20:c2}", Message.RecieptSubtotal, ":", subtotal));
+            Console.WriteLine(String.Format("{0, -20} {1} {2, 20:c2}", Message.RecieptRounding, ":", roundingOffAmount));
+            Console.WriteLine(String.Format("{0, -20} {1} {2, 20:c2}", Message.RecieptTotal, ":", total));
+            Console.WriteLine(String.Format("{0, -20} {1} {2, 20:c2}", Message.RecieptPayedSum, ":", payedSum));
+            Console.WriteLine(String.Format("{0, -20} {1} {2, 20:c2}", Message.RecieptReturnSum, ":", returnSum));
+            Console.WriteLine(Message.RecieptLine);
 
             foreach (uint i in notes)
             {
@@ -168,30 +139,24 @@ namespace _1dv402.S1.L01C
                 {
                     uint value = denominations[iterator];
                     
-                    switch (iterator)
+                    switch (value)
                     {
                         case 500:
                         case 100:
                         case 50:
                         case 20:
-                            form = "lappar";
+                            form = Message.Denomination_Form1;
                             break;
                         case 10:
                         case 5:
                         case 1:
-                            form = "kronor";
+                            form = Message.Denomination_Form2;
                             break;
-
                     }
-
-
-                    Console.WriteLine("{0}-{1}: {2}", value, form, i);
+                    Console.WriteLine(String.Format("{0, 4}-{1, -15} {2} {3, 20}", value, form, ":", i));
                 }
                 iterator++;
             }
-
-
         }
-
     }
 }
