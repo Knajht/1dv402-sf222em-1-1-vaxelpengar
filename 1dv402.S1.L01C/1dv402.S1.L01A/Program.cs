@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace _1dv402.S1.L01A
+namespace _1dv402.S1.L01C
 {
     class Program
     {
@@ -119,5 +119,16 @@ namespace _1dv402.S1.L01A
             } while (startOver == true);
             return payedSum;
         }
+
+        static void ViewMessage(string message, bool IsError)
+        {
+
+        }
+
+        static void ViewReceipt(double subtotal, double roundingOffAmount, uint total, uint cash, uint change, uint[] notes, uint[] denominations)
+        {
+
+        }
+
     }
 }
