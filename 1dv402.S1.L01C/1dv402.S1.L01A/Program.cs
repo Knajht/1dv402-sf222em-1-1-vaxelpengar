@@ -28,9 +28,8 @@ namespace _1dv402.S1.L01C
 
                 SplitIntoDenominations(returnSum);
 
-                Console.BackgroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine("\nTryck ny tangent för ny beräkning - Esc avslutar");
-                Console.ResetColor();
+                ViewMessage("Tryck ny tangent för ny beräkning - Esc avslutar");
+
             } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
         }
         static void SplitIntoDenominations(uint returnSum)
@@ -71,12 +70,15 @@ namespace _1dv402.S1.L01C
         {
             double subtotal = 0;
             bool startOver = true;
+            string input = null;
+
             do
             {
                 try
                 {
                     Console.Write(prompt);
-                    subtotal = double.Parse(Console.ReadLine());
+                    input = (Console.ReadLine());
+                    subtotal = double.Parse(input);
                     if (Math.Round(subtotal, MidpointRounding.AwayFromZero) < 1)
                     {
                         throw new ArgumentOutOfRangeException();
@@ -85,9 +87,7 @@ namespace _1dv402.S1.L01C
                 }
                 catch
                 {
-                    Console.BackgroundColor = ConsoleColor.DarkRed;
-                    Console.WriteLine("FEL! '{0}' kan inte tolkas som en giltig summa pengar.", subtotal);
-                    Console.ResetColor();
+                    ViewMessage(String.Format("FEL! '{0}' kan inte tolkas som en giltig summa pengar.", input), true);
                 }
             } while (startOver == true);
 
@@ -112,16 +112,26 @@ namespace _1dv402.S1.L01C
                 }
                 catch
                 {
-                    Console.BackgroundColor = ConsoleColor.DarkRed;
-                    Console.WriteLine("Ange ett heltal större än eller lika med totalsumman.");
-                    Console.ResetColor();
+                    ViewMessage("Ange ett heltal större än eller lika med totalsumman.", true);
                 }
             } while (startOver == true);
             return payedSum;
         }
 
-        static void ViewMessage(string message, bool IsError)
+        static void ViewMessage(string message, bool IsError = false)
         {
+            if(IsError == false)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine("\n{0}", message);
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("\n{0}", message);
+                Console.ResetColor();
+            }
 
         }
 
